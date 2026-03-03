@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: ui-container
-          image: manoadhi/food-delivery-app:0.0.2
+          image: manoadhi/food-delivery-app:0.0.3
           imagePullPolicy: Always
           ports:
             - containerPort: 80
