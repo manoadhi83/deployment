@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: mysql-container
-          image:  mysql:8.0.45-debian
+          image:  mysql:8.0.36
           imagePullPolicy: Always
           env:
           - name: MYSQL_ROOT_PASSWORD
