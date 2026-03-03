@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: eureka
+  labels:
+    type: eureka-type
+    app: food-delivery-app
+spec:
+  template:
+    metadata:
+      name: eureka-pod
+      labels:
+        type: eureka-pod-type
+        app: food-delivery-app
+    spec:
+      containers:
+      - name: eureka-service-container
+        image: manoadhi/eureka-service:0.0.2
+  replicas: 1
+  selector:
+    matchLabels:
+      type: eureka-pod-type
+      app: food-delivery-app
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-service
+  labels:
+    type: eureka-service-type
+    app: food-delivery-app
+spec:
+  ports:
+    - targetPort: 8761
+      port: 8761
+  selector:
+    type: eureka-pod-type
+    app: food-delivery-app
+

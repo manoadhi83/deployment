@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: order-app
+  labels:
+    type: order-deployment-type
+    app: food-delivery-app
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      type: order-pod-type
+      app: food-delivery-app
+  template:
+    metadata:
+      labels:
+        type: order-pod-type
+        app: food-delivery-app
+    spec:
+      containers:
+      - name: order-container
+        image: manoadhi/order-service:0.0.2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9093
+        env:
+          - name: ORDERDB_URL
+            valueFrom:
+              configMapKeyRef:
+                name: food-app-configmap
+                key:  orderdb_url
+          - name: ORDERDB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: food-app-vault
+                key: mongo-root-password
+          - name: EUREKA_SERVICE_ADDRESS
+            valueFrom:
+              configMapKeyRef:
+                name: food-app-configmap
+                key: eureka_service_address
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  labels:
+    type: order-service-type
+    app: food-delivery-app
+spec:
+  ports:
+    - targetPort: 9093
+      port: 9093
+  selector:
+    type: order-pod-type
+    app: food-delivery-app

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: food-catalogue-app
+  labels:
+    type: food-catalogue-deployment-type
+    app: food-delivery-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: food-catalogue-pod-type
+      app: food-delivery-app
+  template:
+    metadata:
+      labels:
+        type: food-catalogue-pod-type
+        app: food-delivery-app
+    spec:
+      containers:
+      - name: food-catalogue-container
+        image: manoadhi/food-catalogue-service:0.0.2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9092
+        env:
+          - name: SPRING_DATASOURCE_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: food-app-configmap
+                key: mysql-username
+          - name: SPRING_DATASOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: food-app-vault
+                key: mysql-root-password
+          - name: SPRING_DATASOURCE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: food-app-configmap
+                key: foodcataloguedb_url
+          - name: EUREKA_SERVICE_ADDRESS
+            valueFrom:
+              configMapKeyRef:
+                name: food-app-configmap
+                key: eureka_service_address
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: food-catalogue-service
+  labels:
+    type: fc-service
+    app: food-delivery-app
+spec:
+  ports:
+    - targetPort: 9092
+      port: 9092
+  selector:
+    type: food-catalogue-pod-type
+    app: food-delivery-app
+  

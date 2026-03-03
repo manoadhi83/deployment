@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurant-app
+  labels:
+    type: restaurant-deployment-type
+    app: food-delivery-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: restaurant-pod-type
+      app: food-delivery-app
+  template:
+    metadata:
+      labels:
+        type: restaurant-pod-type
+        app: food-delivery-app
+    spec:
+      containers:
+      - name: restaurant-container
+        image: manoadhi/restaurant-service:0.0.2
+        imagePullPolicy: Always
+        ports:  
+        - containerPort: 9091
+        env:
+          - name: SPRING_DATASOURCE_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: food-app-configmap
+                key: mysql-username
+          - name: SPRING_DATASOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: food-app-vault
+                key: mysql-root-password
+          - name: SPRING_DATASOURCE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: food-app-configmap
+                key: restaurantdb_url
+          - name: EUREKA_SERVICE_ADDRESS
+            valueFrom:
+              configMapKeyRef:
+                name: food-app-configmap
+                key: eureka_service_address
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurant-service
+  labels:
+    type: restaurant-service-type
+    app: food-delivery-app
+spec:
+  ports:
+    - targetPort: 9091
+      port: 9091
+  selector:
+    type: restaurant-pod-type
+    app: food-delivery-app

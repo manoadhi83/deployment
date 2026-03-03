@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-app
+  labels:
+    type: mysql-deployment-type
+    app: food-delivery-app
+spec:
+  serviceName: "mysql-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      type: mysql-pod-type
+      app: food-delivery-app
+  template:
+    metadata:
+      labels:
+        type: mysql-pod-type
+        app: food-delivery-app
+    spec:
+      containers:
+        - name: mysql-container
+          image:  mysql:8.0.45-debian
+          imagePullPolicy: Always
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: food-app-vault
+                key: mysql-root-password
+          ports:
+          - containerPort: 3306
+            name: mysql
+          volumeMounts:
+          - name: mysql-data
+            mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  labels:
+    type: mysql-service-type
+    app: food-delivery-app
+spec:
+  clusterIP: None
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    type: mysql-pod-type
+    app: food-delivery-app
